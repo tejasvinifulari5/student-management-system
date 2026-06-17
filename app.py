@@ -86,3 +86,8 @@ def delete_student(id):
     conn.close()
 
     return redirect('/') 
+
+
+@app.route('/edit/<int:id>')
+def edit_student(id):
+    pass
