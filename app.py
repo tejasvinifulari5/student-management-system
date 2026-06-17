@@ -1,60 +1,31 @@
+from flask import Flask, render_template, request, redirect
 import sqlite3
-
-conn = sqlite3.connect('database.db')
-
-conn.execute('''
-CREATE TABLE IF NOT EXISTS students(
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-name TEXT NOT NULL,
-branch TEXT,
-year TEXT,
-email TEXT,
-phone TEXT
-)
-''')
-
-conn.close()
-
-print("Database created")
-
-from flask import Flask, render_template
-from flask import request, redirect
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+# Create database and table
+def init_db():
+    conn = sqlite3.connect('database.db')
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS students(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        branch TEXT,
+        year TEXT,
+        email TEXT,
+        phone TEXT
+    )
+    ''')
 
-@app.route('/add', methods=['GET','POST'])
-def add_student():
+    conn.commit()
+    conn.close()
 
-    if request.method == 'POST':
-
-        name = request.form['name']
-        branch = request.form['branch']
-        year = request.form['year']
-        email = request.form['email']
-        phone = request.form['phone']
-
-        conn = sqlite3.connect('database.db')
-
-        conn.execute(
-            "INSERT INTO students(name,branch,year,email,phone) VALUES(?,?,?,?,?)",
-            (name,branch,year,email,phone)
-        )
-
-        conn.commit()
-        conn.close()
-
-        return redirect('/')
-
-    return render_template('add_student.html')
+# Initialize database
+init_db()
 
 
+# Home Page - View Students
 @app.route('/')
 def home():
 
@@ -72,6 +43,38 @@ def home():
     )
 
 
+# Add Student
+@app.route('/add', methods=['GET', 'POST'])
+def add_student():
+
+    if request.method == 'POST':
+
+        name = request.form['name']
+        branch = request.form['branch']
+        year = request.form['year']
+        email = request.form['email']
+        phone = request.form['phone']
+
+        conn = sqlite3.connect('database.db')
+
+        conn.execute(
+            """
+            INSERT INTO students
+            (name, branch, year, email, phone)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (name, branch, year, email, phone)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+
+    return render_template('add_student.html')
+
+
+# Delete Student
 @app.route('/delete/<int:id>')
 def delete_student(id):
 
@@ -85,9 +88,53 @@ def delete_student(id):
     conn.commit()
     conn.close()
 
-    return redirect('/') 
+    return redirect('/')
 
 
-@app.route('/edit/<int:id>')
+# Edit Student
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit_student(id):
-    pass
+
+    conn = sqlite3.connect('database.db')
+
+    if request.method == 'POST':
+
+        name = request.form['name']
+        branch = request.form['branch']
+        year = request.form['year']
+        email = request.form['email']
+        phone = request.form['phone']
+
+        conn.execute(
+            """
+            UPDATE students
+            SET name=?,
+                branch=?,
+                year=?,
+                email=?,
+                phone=?
+            WHERE id=?
+            """,
+            (name, branch, year, email, phone, id)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+
+    student = conn.execute(
+        "SELECT * FROM students WHERE id=?",
+        (id,)
+    ).fetchone()
+
+    conn.close()
+
+    return render_template(
+        'edit_student.html',
+        student=student
+    )
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
