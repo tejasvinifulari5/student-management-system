@@ -70,4 +70,19 @@ def home():
         'index.html',
         students=students
     )
-    
+
+
+@app.route('/delete/<int:id>')
+def delete_student(id):
+
+    conn = sqlite3.connect('database.db')
+
+    conn.execute(
+        "DELETE FROM students WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/') 
