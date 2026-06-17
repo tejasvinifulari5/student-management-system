@@ -53,4 +53,21 @@ def add_student():
         return redirect('/')
 
     return render_template('add_student.html')
+
+
+@app.route('/')
+def home():
+
+    conn = sqlite3.connect('database.db')
+
+    students = conn.execute(
+        "SELECT * FROM students"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        'index.html',
+        students=students
+    )
     

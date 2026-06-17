@@ -1,13 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Student Management System</title>
-</head>
-<body>
+<table border="1">
 
-<h1>Student Management System</h1>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Branch</th>
+<th>Year</th>
+</tr>
 
-<a href="/add">Add Student</a>
+{% for student in students %}
 
-</body>
-</html>
+<tr>
+<td>{{student[0]}}</td>
+<td>{{student[1]}}</td>
+<td>{{student[2]}}</td>
+<td>{{student[3]}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
